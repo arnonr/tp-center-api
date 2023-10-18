@@ -9,7 +9,12 @@ dotenv.config();
 const app = express();
 const port = process.env.APP_PORT || 3002;
 
-app.use(cors());
+const corsOptions = {
+    origin: '*',
+    credentials: true,
+  };
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(fileUpload());
 app.use('/static', express.static(__dirname + '/public'));
