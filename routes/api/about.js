@@ -13,11 +13,7 @@ router.post(
   controllers.onCreate
 );
 
-router.put(
-  "/:id",
-  // auth.required,
-  controllers.onUpdate
-);
+router.put("/:id", controllers.onUpdate);
 
 router.delete(
   "/:id",
