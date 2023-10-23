@@ -122,6 +122,7 @@ const selectField = {
   confirmed_date: true,
   status_id: true,
   is_publish: true,
+  member_status: true,
   period_time: true,
   equipment: {
     select: {
@@ -130,6 +131,7 @@ const selectField = {
       title: true,
     },
   },
+  equipment_booking_method: true,
 };
 
 // ปรับ Language
@@ -227,12 +229,14 @@ const methods = {
       });
 
       //   equipment_method
-      for (let i = 0; i < req.body.equipment_method.length; i++) {
+      for (let i = 0; i < req.body.equipment_booking_method.length; i++) {
         let data_method = {
           equipment_booking_id: Number(item.id),
-          equipment_method_id: Number(req.body.equipment_method[i].id),
-          quantity: Number(req.body.equipment_method[i].quantity),
-          price: Number(req.body.equipment_method[i].total_price),
+          equipment_method_id: Number(
+            req.body.equipment_booking_method[i].equipment_method_id
+          ),
+          quantity: Number(req.body.equipment_booking_method[i].quantity),
+          price: Number(req.body.equipment_booking_method[i].total_price),
           created_by: "arnonr",
           updated_by: "arnonr",
         };
@@ -256,10 +260,23 @@ const methods = {
           id: Number(req.params.id),
         },
         data: {
-          user_id: req.body.user_id != null ? req.body.user_id : undefined,
+          booking_date:
+            req.body.booking_date != null
+              ? new Date(req.body.booking_date)
+              : undefined,
+          period_time:
+            req.body.period_time != null
+              ? Number(req.body.period_time)
+              : undefined,
           equipment_id:
             req.body.equipment_id != null
               ? Number(req.body.equipment_id)
+              : undefined,
+          user_id:
+            req.body.user_id != null ? Number(req.body.user_id) : undefined,
+          member_status:
+            req.body.member_status != null
+              ? Number(req.body.member_status)
               : undefined,
           example: req.body.example != null ? req.body.example : undefined,
           prefix: req.body.prefix != null ? req.body.prefix : undefined,
@@ -280,19 +297,15 @@ const methods = {
               : undefined,
           tax_id: req.body.tax_id != null ? req.body.tax_id : undefined,
           price: req.body.price != null ? req.body.price : undefined,
-          reject_comment:
-            req.body.reject_comment != null
-              ? req.body.reject_comment
-              : undefined,
           status_id:
-            req.body.status_id != null ? req.body.status_id : undefined,
+            req.body.status_id != null ? Number(req.body.status_id) : undefined,
           is_publish:
             req.body.is_publish != null
               ? Number(req.body.is_publish)
               : undefined,
-          booking_date:
-            req.body.booking_date != null
-              ? new Date(req.body.booking_date)
+          reject_comment:
+            req.body.reject_comment != null
+              ? req.body.reject_comment
               : undefined,
           confirmed_date:
             req.body.confirmed_date != null
@@ -301,6 +314,24 @@ const methods = {
           updated_by: "arnonr",
         },
       });
+
+      //   equipment_method
+      if (req.body.equipment_booking_method) {
+        for (let i = 0; i < req.body.equipment_booking_method.length; i++) {
+          let data_method = {
+            quantity: Number(req.body.equipment_booking_method[i].quantity),
+            price: Number(req.body.equipment_booking_method[i].total_price),
+            updated_by: "arnonr",
+          };
+
+          await prisma.equipment_booking_method.update({
+            where: {
+              id: Number(req.body.equipment_booking_method[i].id),
+            },
+            data: data_method,
+          });
+        }
+      }
 
       res.status(200).json({ ...item, msg: "success" });
     } catch (error) {

@@ -102,7 +102,7 @@ const selectField = {
   unit_th: true,
   unit_en: true,
   equipment_id: true,
-  pricing: true,
+  price: true,
   is_publish: true,
   is_fixrate: true,
   name: true,
@@ -193,7 +193,7 @@ const methods = {
           is_fixrate: req.body.is_fixrate,
           unit_th: req.body.unit_th,
           unit_en: req.body.unit_en,
-          pricing: req.body.pricing,
+          price: req.body.price,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
           updated_by: "arnonr",
@@ -232,8 +232,8 @@ const methods = {
             req.body.is_fixrate != null
               ? Number(req.body.is_fixrate)
               : undefined,
-          pricing:
-            req.body.pricing != null ? Number(req.body.pricing) : undefined,
+          price:
+            req.body.price != null ? Number(req.body.price) : undefined,
           updated_by: "arnonr",
         },
       });

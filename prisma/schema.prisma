@@ -227,7 +227,7 @@ model equipment_method {
     name_short               String?                    @db.VarChar(500)
     unit_th                  String?                    @db.VarChar(500)
     unit_en                  String?                    @db.VarChar(500)
-    pricing                  Int?
+    price                    Int?
     is_fixrate               Int?
     is_active                Int                        @default(1)
     is_publish               Int                        @default(1)
