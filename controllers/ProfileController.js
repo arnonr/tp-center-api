@@ -1,7 +1,4 @@
 const { PrismaClient } = require("@prisma/client");
-const uploadController = require("./UploadsController");
-const jwt = require("jsonwebtoken");
-// const { expressjwt: jwt1 } = require("express-jwt");
 
 const prisma = new PrismaClient();
 
@@ -12,19 +9,49 @@ const filterData = (req) => {
   };
 
   if (req.query.id) {
-    $where["id"] = parseInt(req.query.id);
+    $where["id"] = Number(req.query.id);
   }
 
-  if (req.query.email) {
-    $where["email"] = parseInt(req.query.email);
+  if (req.query.user_id) {
+    $where["user_id"] = Number(req.query.user_id);
   }
 
-  if (req.query.status) {
-    $where["status"] = parseInt(req.query.status);
+  if (req.query.prefix) {
+    $where["prefix"] = req.query.prefix;
   }
 
-  if (req.query.group_id) {
-    $where["group_id"] = parseInt(req.query.group_id);
+  if (req.query.firstname) {
+    $where["firstname"] = {
+      contains: req.query.firstname,
+    };
+  }
+
+  if (req.query.surname) {
+    $where["surname"] = {
+      contains: req.query.surname,
+    };
+  }
+
+  if (req.query.organization) {
+    $where["organization"] = {
+      contains: req.query.organization,
+    };
+  }
+
+  if (req.query.member_status) {
+    $where["member_status"] = parseInt(req.query.member_status);
+  }
+
+  if (req.query.phone) {
+    $where["phone"] = {
+      contains: req.query.phone,
+    };
+  }
+
+  if (req.query.tax_id) {
+    $where["tax_id"] = {
+      contains: req.query.tax_id,
+    };
   }
 
   if (req.query.is_publish) {
@@ -45,7 +72,7 @@ const countDataAndOrder = async (req, $where) => {
   }
 
   //Count
-  let $count = await prisma.user.findMany({
+  let $count = await prisma.profile.findMany({
     where: $where,
   });
 
@@ -69,57 +96,18 @@ const countDataAndOrder = async (req, $where) => {
 // ฟิลด์ที่ต้องการ Select รวมถึง join
 const selectField = {
   id: true,
-  group_id: true,
-  email: true,
-  //   password: true,
-  status: true,
+  user_id: true,
+  prefix: true,
+  firstname: true,
+  surname: true,
+  contact_address: true,
+  invoice_address: true,
+  organization: true,
+  member_status: true,
+  phone: true,
+  tax_id: true,
   is_publish: true,
-  profile: {
-    select: {
-      prefix: true,
-      firstname: true,
-      surname: true,
-    },
-  },
 };
-
-// ปรับ Language
-// const checkLanguage = (req) => {
-//   let prismaLang = prisma.$extends({
-//     result: {
-//       news: {
-//         title: {
-//           needs: { title_th: true },
-//           compute(news) {
-//             return req.query.lang && req.query.lang == "en"
-//               ? news.title_en
-//               : news.title_th;
-//           },
-//         },
-//         detail: {
-//           needs: { detail_th: true },
-//           compute(news) {
-//             return req.query.lang && req.query.lang == "en"
-//               ? news.detail_en
-//               : news.detail_th;
-//           },
-//         },
-//       },
-//       news_type: {
-//         name: {
-//           needs: { name_th: true },
-//           compute(news_type) {
-//             return req.query.lang && req.query.lang == "en"
-//               ? news_type.name_en
-//               : news_type.name_th;
-//           },
-//         },
-//       },
-//     },
-//   });
-
-//   return prismaLang;
-// };
 
 const methods = {
   // ค้นหาทั้งหมด
@@ -128,7 +116,7 @@ const methods = {
       let $where = filterData(req);
       let other = await countDataAndOrder(req, $where);
 
-      const item = await prisma.user.findMany({
+      const item = await prisma.profile.findMany({
         select: selectField,
         where: $where,
         orderBy: other.$orderBy,
@@ -150,7 +138,7 @@ const methods = {
   // ค้นหาเรคคอร์ดเดียว
   async onGetById(req, res) {
     try {
-      const item = await prisma.user.findUnique({
+      const item = await prisma.profile.findUnique({
         select: selectField,
         where: {
           id: Number(req.params.id),
@@ -165,12 +153,18 @@ const methods = {
   // สร้าง
   async onCreate(req, res) {
     try {
-      const item = await prisma.user.create({
+      const item = await prisma.profile.create({
         data: {
-          group_id: Number(req.body.group_id),
-          email: req.body.email,
-          password: req.body.password,
-          status: Number(req.body.status),
+          user_id: Number(req.body.user_id),
+          prefix: req.body.prefix,
+          firstname: req.body.firstname,
+          surname: req.body.surname,
+          contact_address: req.body.contact_address,
+          invoice_address: req.body.invoice_address,
+          member_status: Number(req.body.member_status),
+          organization: req.body.organization,
+          phone: req.body.phone,
+          tax_id: req.body.tax_id,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
           updated_by: "arnonr",
@@ -198,20 +192,40 @@ const methods = {
   // แก้ไข
   async onUpdate(req, res) {
     try {
-      const item = await prisma.user.update({
+      const item = await prisma.profile.update({
         where: {
           id: Number(req.params.id),
         },
-        
+
         data: {
-          group_id:
-            req.body.group_id != null ? Number(req.body.group_id) : undefined,
-          email: req.body.email != null ? req.body.email : undefined,
-          password: req.body.password != null ? req.body.password : undefined,
-          status: req.body.status != null ? req.body.status : undefined,
+          user_id:
+            req.body.user_id != null ? Number(req.body.user_id) : undefined,
+          prefix: req.body.prefix != null ? req.body.prefix : undefined,
+          firstname:
+            req.body.firstname != null ? req.body.firstname : undefined,
+          contact_address:
+            req.body.contact_address != null
+              ? req.body.contact_address
+              : undefined,
+          invoice_address:
+            req.body.invoice_address != null
+              ? req.body.invoice_address
+              : undefined,
+          member_status:
+            req.body.member_status != null
+              ? Number(req.body.member_status)
+              : undefined,
+          organization:
+            req.body.organization != null ? req.body.organization : undefined,
+          phone: req.body.phone != null ? req.body.phone : undefined,
+          tax_id: req.body.tax_id != null ? req.body.tax_id : undefined,
           is_publish:
             req.body.is_publish != null
               ? Number(req.body.is_publish)
+              : undefined,
+          created_news:
+            req.body.created_news != null
+              ? new Date(req.body.created_news)
               : undefined,
           updated_by: "arnonr",
         },
@@ -225,7 +239,7 @@ const methods = {
   // ลบ
   async onDelete(req, res) {
     try {
-      const item = await prisma.user.update({
+      const item = await prisma.profile.update({
         where: {
           id: Number(req.params.id),
         },

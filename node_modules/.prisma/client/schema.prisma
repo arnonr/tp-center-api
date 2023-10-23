@@ -265,7 +265,6 @@ model user {
     status            Int                 @default(1)
     is_active         Int                 @default(1)
     is_publish        Int                 @default(1)
-    created_equipment DateTime            @db.Date
     created_at        DateTime?           @default(now()) @db.DateTime(0)
     created_by        String?             @db.VarChar(255)
     updated_at        DateTime?           @updatedAt
@@ -275,21 +274,26 @@ model user {
 }
 
 model profile {
-    id                Int       @id @default(autoincrement())
-    user              user      @relation(fields: [user_id], references: [id])
-    user_id           Int       @unique // relation scalar field (used in the `@relation` attribute above)
-    prefix            String?   @db.VarChar(500)
-    firstname         String?   @db.VarChar(500)
-    surname           String?   @db.VarChar(500)
-    status            Int       @default(1)
-    is_active         Int       @default(1)
-    is_publish        Int       @default(1)
-    created_equipment DateTime  @db.Date
-    created_at        DateTime? @default(now()) @db.DateTime(0)
-    created_by        String?   @db.VarChar(255)
-    updated_at        DateTime? @updatedAt
-    updated_by        String?   @db.VarChar(255)
-    deleted_at        DateTime?
+    id              Int       @id @default(autoincrement())
+    user            user      @relation(fields: [user_id], references: [id])
+    user_id         Int       @unique // relation scalar field (used in the `@relation` attribute above)
+    prefix          String?   @db.VarChar(500)
+    firstname       String?   @db.VarChar(500)
+    surname         String?   @db.VarChar(500)
+    member_status   Int
+    organization    String?   @db.VarChar(500)
+    contact_address String?   @db.LongText
+    phone           String?   @db.VarChar(500)
+    email           String?   @db.VarChar(500)
+    invoice_address String?   @db.LongText
+    tax_id          String?   @db.VarChar(500)
+    is_active       Int       @default(1)
+    is_publish      Int       @default(1)
+    created_at      DateTime? @default(now()) @db.DateTime(0)
+    created_by      String?   @db.VarChar(255)
+    updated_at      DateTime? @updatedAt
+    updated_by      String?   @db.VarChar(255)
+    deleted_at      DateTime?
 }
 
 model equipment_booking {
