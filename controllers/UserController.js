@@ -1,6 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const uploadController = require("./UploadsController");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 // const { expressjwt: jwt1 } = require("express-jwt");
 
 const prisma = new PrismaClient();
@@ -184,6 +186,13 @@ const methods = {
           firstname: req.body.firstname,
           surname: req.body.surname,
           is_publish: Number(req.body.is_publish),
+          contact_address: req.body.contact_address,
+          invoice_address: req.body.invoice_address,
+          invoice_name: req.body.invoice_name,
+          member_status: Number(req.body.member_status),
+          organization: req.body.organization,
+          phone: req.body.phone,
+          tax_id: req.body.tax_id,
           created_by: "arnonr",
           updated_by: "arnonr",
         },
@@ -202,7 +211,7 @@ const methods = {
         where: {
           id: Number(req.params.id),
         },
-        
+
         data: {
           group_id:
             req.body.group_id != null ? Number(req.body.group_id) : undefined,
@@ -251,6 +260,10 @@ const methods = {
       });
 
       if (item) {
+        if (item.status == 1) {
+          throw new Error("Not Confirm Email");
+          return;
+        }
         const payload = item;
         const secretKey = process.env.SECRET_KEY;
 
@@ -260,8 +273,226 @@ const methods = {
 
         res.status(200).json({ ...item, token: token });
       } else {
-        res.status(400).json({ msg: "Invalid credential" });
+        throw new Error("Invalid credential");
       }
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  // สร้าง
+  async onRegister(req, res) {
+    try {
+      const checkItem = await prisma.user.findFirst({
+        where: {
+          email: req.body.email,
+        },
+      });
+
+      if (checkItem) {
+        throw new Error("email is duplicate");
+      }
+
+      const item = await prisma.user.create({
+        data: {
+          group_id: Number(req.body.group_id),
+          email: req.body.email,
+          password: req.body.password,
+          status: Number(req.body.status),
+          is_publish: Number(req.body.is_publish),
+          secret_confirm_email: crypto.randomBytes(20).toString("hex"),
+          created_by: "arnonr",
+          updated_by: "arnonr",
+        },
+      });
+
+      const profile = await prisma.profile.create({
+        data: {
+          user_id: Number(item.id),
+          prefix: req.body.prefix,
+          firstname: req.body.firstname,
+          surname: req.body.surname,
+          is_publish: Number(req.body.is_publish),
+          contact_address: req.body.contact_address,
+          invoice_address: req.body.invoice_address,
+          invoice_name: req.body.invoice_name,
+          member_status: Number(req.body.member_status),
+          organization: req.body.organization,
+          phone: req.body.phone,
+          tax_id: req.body.tax_id,
+          created_by: "arnonr",
+          updated_by: "arnonr",
+        },
+      });
+
+      let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          // ข้อมูลการเข้าสู่ระบบ
+          user: "cwie@kmutnb.ac.th", // email user ของเรา
+          pass: "xhqqcypawtnyfnhl", // email password
+        },
+      });
+
+      await transporter.sendMail({
+        from: "ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์", // อีเมลผู้ส่ง
+        to: item.email, // อีเมลผู้รับ สามารถกำหนดได้มากกว่า 1 อีเมล โดยขั้นด้วย ,(Comma)
+        subject:
+          "ยืนยันการสมัครสมาชิก ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์", // หัวข้ออีเมล
+        html:
+          "<b>ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์</b><br> โปรดยืนยันการสมัครสมาชิก : <a href='" +
+          process.env.PATH_CLIENT +
+          "confirm-email?id=" +
+          item.id +
+          "&email=" +
+          item.email +
+          "&secret_confirm_email=" +
+          item.secret_confirm_email +
+          "'>คลิก</a>", // html body
+      });
+
+      res.status(201).json({ ...item, ...profile, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  async onConfirmEmail(req, res) {
+    try {
+      const item = await prisma.user.findFirst({
+        where: {
+          id: Number(req.body.id),
+          email: req.body.email,
+          secret_confirm_email: req.body.secret_confirm_email,
+        },
+      });
+
+      if (item) {
+        await prisma.user.update({
+          where: {
+            id: item.id,
+          },
+          data: {
+            status: 2,
+          },
+        });
+      } else {
+        throw new Error("Key is Wrong");
+      }
+
+      res.status(201).json({ ...item, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  async onResendConfirmEmail(req, res) {
+    try {
+      const item = await prisma.user.findFirst({
+        where: {
+          email: req.body.email,
+        },
+      });
+
+      if (!item) {
+        throw new Error("Email Not Found");
+      }
+
+      let itemUpdate = await prisma.user.update({
+        where: {
+          id: item.id,
+        },
+        data: {
+          secret_confirm_email: crypto.randomBytes(20).toString("hex"),
+        },
+      });
+
+      let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          // ข้อมูลการเข้าสู่ระบบ
+          user: "cwie@kmutnb.ac.th", // email user ของเรา
+          pass: "xhqqcypawtnyfnhl", // email password
+        },
+      });
+
+      await transporter.sendMail({
+        from: "ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์", // อีเมลผู้ส่ง
+        to: itemUpdate.email, // อีเมลผู้รับ สามารถกำหนดได้มากกว่า 1 อีเมล โดยขั้นด้วย ,(Comma)
+        subject:
+          "ยืนยันการสมัครสมาชิก ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์", // หัวข้ออีเมล
+        html:
+          "<b>ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์</b><br> โปรดยืนยันการสมัครสมาชิก : <a href='" +
+          process.env.PATH_CLIENT +
+          "confirm-email?id=" +
+          itemUpdate.id +
+          "&email=" +
+          itemUpdate.email +
+          "&secret_confirm_email=" +
+          itemUpdate.secret_confirm_email +
+          "'>คลิก</a>", // html body
+      });
+
+      res.status(201).json({ ...item, msg: "success", password: undefined });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  async onResendResetPassword(req, res) {
+    try {
+      const item = await prisma.user.findFirst({
+        where: {
+          email: req.body.email,
+        },
+      });
+
+      if (!item) {
+        throw new Error("Email Not Found");
+      }
+
+      let itemUpdate = await prisma.user.update({
+        where: {
+          id: item.id,
+        },
+        data: {
+          secret_confirm_email: crypto.randomBytes(20).toString("hex"),
+        },
+      });
+
+      let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          // ข้อมูลการเข้าสู่ระบบ
+          user: "cwie@kmutnb.ac.th", // email user ของเรา
+          pass: "xhqqcypawtnyfnhl", // email password
+        },
+      });
+
+      await transporter.sendMail({
+        from: "ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์", // อีเมลผู้ส่ง
+        to: itemUpdate.email, // อีเมลผู้รับ สามารถกำหนดได้มากกว่า 1 อีเมล โดยขั้นด้วย ,(Comma)
+        subject:
+          "ยืนยันการรีเซ็ตรหัสผ่าน ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์", // หัวข้ออีเมล
+        html:
+          "<b>ศูนย์เครื่องมือวิทยาศาสตร์และคอมพิวเตอร์สมรรถนะสูง คณะวิทยาศาสตร์ประยุกต์</b><br> โปรดรีเซ็ตรหัสผ่าน : <a href='" +
+          process.env.PATH_CLIENT +
+          "reset-password?id=" +
+          itemUpdate.id +
+          "&email=" +
+          itemUpdate.email +
+          "&secret_confirm_email=" +
+          itemUpdate.secret_confirm_email +
+          "'>คลิก</a>", // html body
+      });
+
+      res.status(201).json({ ...item, msg: "success", password: undefined });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }

@@ -256,21 +256,22 @@ model group {
 }
 
 model user {
-    id                Int                 @id @default(autoincrement())
-    group             group               @relation(fields: [group_id], references: [id])
-    group_id          Int
-    profile           profile?
-    email             String              @db.VarChar(500)
-    password          String?             @db.VarChar(500)
-    status            Int                 @default(1)
-    is_active         Int                 @default(1)
-    is_publish        Int                 @default(1)
-    created_at        DateTime?           @default(now()) @db.DateTime(0)
-    created_by        String?             @db.VarChar(255)
-    updated_at        DateTime?           @updatedAt
-    updated_by        String?             @db.VarChar(255)
-    deleted_at        DateTime?
-    equipment_booking equipment_booking[]
+    id                   Int                 @id @default(autoincrement())
+    group                group               @relation(fields: [group_id], references: [id])
+    group_id             Int
+    profile              profile?
+    email                String              @db.VarChar(500)
+    secret_confirm_email String?             @db.VarChar(500)
+    password             String?             @db.VarChar(500)
+    status               Int                 @default(1)
+    is_active            Int                 @default(1)
+    is_publish           Int                 @default(1)
+    created_at           DateTime?           @default(now()) @db.DateTime(0)
+    created_by           String?             @db.VarChar(255)
+    updated_at           DateTime?           @updatedAt
+    updated_by           String?             @db.VarChar(255)
+    deleted_at           DateTime?
+    equipment_booking    equipment_booking[]
 }
 
 model profile {
@@ -285,6 +286,7 @@ model profile {
     contact_address String?   @db.LongText
     phone           String?   @db.VarChar(500)
     email           String?   @db.VarChar(500)
+    invoice_name    String?   @db.VarChar(500)
     invoice_address String?   @db.LongText
     tax_id          String?   @db.VarChar(500)
     is_active       Int       @default(1)

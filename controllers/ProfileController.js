@@ -101,6 +101,7 @@ const selectField = {
   firstname: true,
   surname: true,
   contact_address: true,
+  invoice_name: true,
   invoice_address: true,
   organization: true,
   member_status: true,
@@ -160,23 +161,12 @@ const methods = {
           firstname: req.body.firstname,
           surname: req.body.surname,
           contact_address: req.body.contact_address,
+          invoice_name: req.body.invoice_name,
           invoice_address: req.body.invoice_address,
           member_status: Number(req.body.member_status),
           organization: req.body.organization,
           phone: req.body.phone,
           tax_id: req.body.tax_id,
-          is_publish: Number(req.body.is_publish),
-          created_by: "arnonr",
-          updated_by: "arnonr",
-        },
-      });
-
-      const profile = await prisma.profile.create({
-        data: {
-          user_id: Number(item.id),
-          prefix: req.body.prefix,
-          firstname: req.body.firstname,
-          surname: req.body.surname,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
           updated_by: "arnonr",
@@ -207,6 +197,8 @@ const methods = {
             req.body.contact_address != null
               ? req.body.contact_address
               : undefined,
+          invoice_name:
+            req.body.invoice__name != null ? req.body.invoice_name : undefined,
           invoice_address:
             req.body.invoice_address != null
               ? req.body.invoice_address
@@ -249,33 +241,6 @@ const methods = {
       });
 
       res.status(200).json(item);
-    } catch (error) {
-      res.status(400).json({ msg: error.message });
-    }
-  },
-
-  async onLogin(req, res) {
-    try {
-      const item = await prisma.user.findFirst({
-        select: selectField,
-        where: {
-          email: req.body.email,
-          password: req.body.password,
-        },
-      });
-
-      if (item) {
-        const payload = item;
-        const secretKey = process.env.SECRET_KEY;
-
-        const token = jwt.sign(payload, secretKey, {
-          expiresIn: "90d",
-        });
-
-        res.status(200).json({ ...item, token: token });
-      } else {
-        res.status(400).json({ msg: "Invalid credential" });
-      }
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }

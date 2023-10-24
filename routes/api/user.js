@@ -6,6 +6,10 @@ const auth = require("../auth");
 // const { checkPermission } = require("../accessControl");
 
 router.post("/login", controllers.onLogin);
+router.post("/register", controllers.onRegister);
+router.post("/confirm-email", controllers.onConfirmEmail);
+router.post("/resend-confirm-email", controllers.onResendConfirmEmail);
+router.post("/resend-reset-password", controllers.onResendResetPassword);
 router.get("/", controllers.onGetAll);
 router.get("/:id", controllers.onGetById);
 
