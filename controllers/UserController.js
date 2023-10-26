@@ -18,7 +18,11 @@ const filterData = (req) => {
   }
 
   if (req.query.email) {
-    $where["email"] = parseInt(req.query.email);
+    $where["email"] = req.query.email;
+  }
+
+  if (req.query.secret_confirm_email) {
+    $where["secret_confirm_email"] = req.query.secret_confirm_email;
   }
 
   if (req.query.status) {
@@ -493,6 +497,24 @@ const methods = {
       });
 
       res.status(201).json({ ...item, msg: "success", password: undefined });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  async onResetPassword(req, res) {
+    try {
+      const item = await prisma.user.update({
+        where: {
+          id: Number(req.body.id),
+        },
+        data: {
+          password: req.body.password != null ? req.body.password : undefined,
+          updated_by: "arnonr",
+        },
+      });
+
+      res.status(200).json({ ...item, msg: "success" });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }
