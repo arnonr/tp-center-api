@@ -73,6 +73,12 @@ const filterData = (req) => {
     $where["equipment_department_id"] = parseInt(
       req.query.equipment_department_id
     );
+  } else {
+    if (req.query.not_equipment_department_id) {
+      $where["equipment_department_id"] = {
+        gt: parseInt(req.query.not_equipment_department_id),
+      };
+    }
   }
 
   if (req.query.is_publish) {
