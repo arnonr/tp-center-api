@@ -2,7 +2,12 @@ const { PrismaClient } = require("@prisma/client");
 const uploadController = require("./UploadsController");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const algorithm = "aes-256-cbc"; //Using AES encryption
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
 const nodemailer = require("nodemailer");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 // const { expressjwt: jwt1 } = require("express-jwt");
 
 const prisma = new PrismaClient();
@@ -87,6 +92,13 @@ const selectField = {
       surname: true,
     },
   },
+};
+
+//Encrypting text
+const encrypt = (text) => {
+  const salt = bcrypt.genSaltSync(saltRounds);
+  const hash = bcrypt.hashSync(text, salt);
+  return hash;
 };
 
 // ปรับ Language
@@ -256,18 +268,22 @@ const methods = {
   async onLogin(req, res) {
     try {
       const item = await prisma.user.findFirst({
-        select: selectField,
+        select: { ...selectField, password: true },
         where: {
           email: req.body.email,
-          password: req.body.password,
+          //   password: req.body.password,
         },
       });
 
       if (item) {
         if (item.status == 1) {
           throw new Error("Not Confirm Email");
-          return;
         }
+        
+        if (bcrypt.compareSync(req.body.password, item.password) == false) {
+          throw new Error("Password Wrong");
+        }
+
         const payload = item;
         const secretKey = process.env.SECRET_KEY;
 
@@ -284,7 +300,6 @@ const methods = {
     }
   },
 
-  // สร้าง
   async onRegister(req, res) {
     try {
       const checkItem = await prisma.user.findFirst({
@@ -301,7 +316,7 @@ const methods = {
         data: {
           group_id: Number(req.body.group_id),
           email: req.body.email,
-          password: req.body.password,
+          password: encrypt(req.body.password),
           status: Number(req.body.status),
           is_publish: Number(req.body.is_publish),
           secret_confirm_email: crypto.randomBytes(20).toString("hex"),
@@ -509,7 +524,8 @@ const methods = {
           id: Number(req.body.id),
         },
         data: {
-          password: req.body.password != null ? req.body.password : undefined,
+          password:
+            req.body.password != null ? encrypt(req.body.password) : undefined,
           updated_by: "arnonr",
         },
       });
