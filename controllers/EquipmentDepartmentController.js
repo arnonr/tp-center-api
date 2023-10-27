@@ -88,6 +88,7 @@ const selectField = {
   id: true,
   name_th: true,
   name_en: true,
+  name_short: true,
   is_publish: true,
   name: true,
 };
