@@ -11,7 +11,7 @@ const filterData = (req) => {
   }
 
   if (req.query.name_short) {
-    $where["name_short"] = parseInt(req.query.name_short);
+    $where["name_short"] = req.query.name_short;
   }
 
   if (req.query.lang && req.query.lang == "en") {
@@ -157,6 +157,68 @@ const methods = {
       });
     } catch (error) {
       res.status(404).json({ msg: error.message });
+    }
+  },
+
+  // สร้าง
+  async onCreate(req, res) {
+    try {
+      const item = await prisma.equipment_department.create({
+        data: {
+          name_th: req.body.name_th,
+          name_en: req.body.name_en,
+          name_short: req.body.name_short,
+          is_publish: Number(req.body.is_publish),
+          created_by: "arnonr",
+          updated_by: "arnonr",
+        },
+      });
+
+      res.status(201).json({ ...item, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  // แก้ไข
+  async onUpdate(req, res) {
+    try {
+      const item = await prisma.equipment_department.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          name_th: req.body.name_th != null ? req.body.name_th : undefined,
+          name_en: req.body.name_en != null ? req.body.name_en : undefined,
+          name_short:
+            req.body.name_short != null ? req.body.name_short : undefined,
+          is_publish: Number(req.body.is_publish),
+          updated_by: "arnonr",
+        },
+      });
+
+      res.status(200).json({ ...item, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+  // ลบ
+  async onDelete(req, res) {
+    try {
+      const item = await prisma.equipment_department.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          deleted_at: new Date().toISOString(),
+        },
+      });
+
+      res.status(200).json({
+        msg: "success",
+      });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
     }
   },
 };

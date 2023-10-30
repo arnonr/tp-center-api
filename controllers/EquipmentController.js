@@ -274,6 +274,7 @@ const methods = {
       const item = await prisma.equipment.create({
         data: {
           equipment_department_id: Number(req.body.equipment_department_id),
+          equipment_category_id: 1,
           title_th: req.body.title_th,
           title_en: req.body.title_en,
           detail_th: req.body.detail_th,
@@ -306,21 +307,31 @@ const methods = {
   // แก้ไข
   async onUpdate(req, res) {
     try {
-      let pathFile = await uploadController.onUploadFile(
-        req,
-        "/images/equipment/",
-        "equipment_file"
-      );
+      let pathFile = null;
+      if (req.body.equipment_file != 'undefined') {
+        pathFile = await uploadController.onUploadFile(
+          req,
+          "/images/equipment/",
+          "equipment_file"
+        );
 
-      if (pathFile == "error") {
-        return res.status(500).send("error");
+        if (pathFile == "error") {
+          return res.status(500).send("error");
+        }
       }
 
-      let pathRateFile = await uploadController.onUploadFile(
-        req,
-        "/images/equipment/rate/",
-        "rate_file"
-      );
+      let pathRateFile = null;
+      if (req.body.rate_file != 'undefined') {
+        pathRateFile = await uploadController.onUploadFile(
+          req,
+          "/images/equipment/rate/",
+          "rate_file"
+        );
+
+        if (pathRateFile == "error") {
+          return res.status(500).send("error");
+        }
+      }
 
       const item = await prisma.equipment.update({
         where: {
@@ -368,7 +379,9 @@ const methods = {
         },
       });
 
-      res.status(200).json(item);
+      res.status(200).json({
+        msg: "success",
+      });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }

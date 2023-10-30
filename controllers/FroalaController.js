@@ -60,28 +60,38 @@ const methods = {
 
   async onUploadUppy(req, res) {
     try {
-      let pathFile = await uploadController.onUploadFile(req, "/uppy/", "file");
+      let table_name = req.body.table_name;
+
+      let pathFile = await uploadController.onUploadFile(
+        req,
+        "/uppy/" + table_name + "/",
+        "file"
+      );
 
       if (pathFile == "error") {
         res.status(500).send("error");
       } else {
-        const item = await prisma.news_gallery.create({
-          data: {
-            news_id: req.body.news_id != "null" ? Number(req.body.news_id) : null,
-            news_gallery_file: pathFile,
-            secret_key: req.body.secret_key,
-            is_publish: 1,
-            created_by: "arnonr",
-            updated_by: "arnonr",
-          },
+        let data = {};
+        data["equipment_id"] =
+          req.body[table_name + "_id"] != "null"
+            ? Number(req.body[table_name + "_id"])
+            : null;
+        data[table_name + "_gallery_file"] = pathFile;
+        data["secret_key"] = req.body.secret_key;
+        data["is_publish"] = 1;
+        data["created_by"] = "arnonr";
+        data["updated_by"] = "arnonr";
+
+        const item = await prisma[table_name + "_gallery"].create({
+          data: data,
         });
 
-        res.status(201).json({
-          message: "success",
-          link: pathFile,
-          news_id: item.news_id,
-          news_gallery_id: item.id,
-        });
+        let return_json = {};
+        return_json["message"] = "success";
+        return_json["link"] = pathFile;
+        return_json[table_name + "_id"] = item[table_name + "_id"];
+        return_json[table_name + "_gallery_id"] = item.id;
+        res.status(201).json(return_json);
       }
     } catch (error) {
       res.status(400).json({ msg: error.message });
