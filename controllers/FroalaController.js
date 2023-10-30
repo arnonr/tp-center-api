@@ -72,7 +72,7 @@ const methods = {
         res.status(500).send("error");
       } else {
         let data = {};
-        data["equipment_id"] =
+        data[table_name + "_id"] =
           req.body[table_name + "_id"] != "null"
             ? Number(req.body[table_name + "_id"])
             : null;
