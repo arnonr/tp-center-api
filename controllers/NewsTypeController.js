@@ -76,7 +76,6 @@ const countDataAndOrder = async (req, $where) => {
     $count: $count,
     $totalPage: $totalPage,
     $currentPage: $currentPage,
-    
   };
 };
 
@@ -153,6 +152,66 @@ const methods = {
       });
     } catch (error) {
       res.status(404).json({ msg: error.message });
+    }
+  },
+
+  // สร้าง
+  async onCreate(req, res) {
+    try {
+      const item = await prisma.news_type.create({
+        data: {
+          name_th: req.body.name_th,
+          name_en: req.body.name_en,
+          is_publish: Number(req.body.is_publish),
+          created_by: "arnonr",
+          updated_by: "arnonr",
+        },
+      });
+
+      res.status(201).json({ ...item, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  // แก้ไข
+  async onUpdate(req, res) {
+    try {
+      const item = await prisma.news_type.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          name_th: req.body.name_th != null ? req.body.name_th : undefined,
+          name_en: req.body.name_en != null ? req.body.name_en : undefined,
+          is_publish: Number(req.body.is_publish),
+          updated_by: "arnonr",
+        },
+      });
+
+      res.status(200).json({ ...item, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+  // ลบ
+  async onDelete(req, res) {
+    try {
+        
+      await prisma.news_type.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          deleted_at: new Date().toISOString(),
+        },
+      });
+
+      res.status(200).json({
+        msg: "success",
+      });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
     }
   },
 };

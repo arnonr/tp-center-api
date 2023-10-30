@@ -267,7 +267,9 @@ const methods = {
         },
       });
 
-      res.status(200).json(item);
+      res.status(200).json({
+        msg: "success",
+      });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }

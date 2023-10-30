@@ -205,7 +205,7 @@ const methods = {
   // ลบ
   async onDelete(req, res) {
     try {
-      const item = await prisma.equipment_department.update({
+      await prisma.equipment_department.update({
         where: {
           id: Number(req.params.id),
         },
