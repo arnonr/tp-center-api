@@ -58,6 +58,17 @@ const filterData = (req) => {
     $where["is_publish"] = parseInt(req.query.is_publish);
   }
 
+  $where["user"] = {};
+
+  if (req.query.status) {
+    console.log(req.query.status);
+    $where["user"]["status"] = parseInt(req.query.status);
+  }
+
+  if (req.query.group_id) {
+    $where["user"]["group_id"] = parseInt(req.query.group_id);
+  }
+
   return $where;
 };
 
@@ -108,6 +119,13 @@ const selectField = {
   phone: true,
   tax_id: true,
   is_publish: true,
+  user: {
+    select: {
+      group_id: true,
+      status: true,
+      email: true,
+    },
+  },
 };
 
 const methods = {
@@ -186,7 +204,6 @@ const methods = {
         where: {
           id: Number(req.params.id),
         },
-
         data: {
           user_id:
             req.body.user_id != null ? Number(req.body.user_id) : undefined,
@@ -215,11 +232,18 @@ const methods = {
             req.body.is_publish != null
               ? Number(req.body.is_publish)
               : undefined,
-          created_news:
-            req.body.created_news != null
-              ? new Date(req.body.created_news)
-              : undefined,
           updated_by: "arnonr",
+        },
+      });
+
+      await prisma.user.update({
+        where: {
+          id: Number(item.user_id),
+        },
+        data: {
+          email: req.body.email != null ?req.body.email : undefined,
+          group_id:
+            req.body.group_id != null ? Number(req.body.group_id) : undefined,
         },
       });
 
