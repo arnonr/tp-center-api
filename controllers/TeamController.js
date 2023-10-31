@@ -267,6 +267,18 @@ const methods = {
         return res.status(500).send("error");
       }
 
+      const checkLevel = await prisma.team.findFirst({
+        where: { department_id: Number(req.body.department_id) },
+        orderBy: {
+          level: "desc",
+        },
+      });
+
+      let level = 1;
+      if (checkLevel) {
+        level = checkLevel.level + 1;
+      }
+
       const item = await prisma.team.create({
         data: {
           department_id: Number(req.body.department_id),
@@ -276,13 +288,9 @@ const methods = {
           firstname_en: req.body.firstname_en,
           surname_th: req.body.surname_th,
           surname_en: req.body.surname_en,
-          position_th: req.body.position_th,
-          position_en: req.body.position_en,
-          position_level_th: req.body.position_level_th,
-          position_level_en: req.body.position_level_en,
-          phone: req.body.phone,
           email: req.body.email,
-          level: Number(req.body.level),
+          phone: req.body.phone,
+          level: level,
           team_file: pathFile,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
@@ -317,28 +325,21 @@ const methods = {
             req.body.department_id != null
               ? Number(req.body.department_id)
               : undefined,
-
-          prefix_th: req.body.prefix_th != null ? req.body.prefix_th : undefined,
-          prefix_en: req.body.prefix_en != null ? req.body.prefix_en : undefined,
+          prefix_th:
+            req.body.prefix_th != null ? req.body.prefix_th : undefined,
+          prefix_en:
+            req.body.prefix_en != null ? req.body.prefix_en : undefined,
           firstname_th:
             req.body.firstname_th != null ? req.body.firstname_th : undefined,
           firstname_en:
             req.body.firstname_en != null ? req.body.firstname_en : undefined,
-          surname_th: req.body.surname_th != null ? req.body.surname_th : undefined,
-          surname_en: req.body.surname_en != null ? req.body.surname_en : undefined,
-          position_th: req.body.position_th != null ? req.body.position_th : undefined,
-          position_en: req.body.position_en != null ? req.body.position_en : undefined,
-          position_level_th:
-            req.body.position_level_th != null
-              ? req.body.position_level_th
-              : undefined,
-          position_level_en:
-            req.body.position_level_en != null
-              ? req.body.position_level_en
-              : undefined,
-          phone: req.body.phone != null ? req.body.phone : undefined,
+          surname_th:
+            req.body.surname_th != null ? req.body.surname_th : undefined,
+          surname_en:
+            req.body.surname_en != null ? req.body.surname_en : undefined,
+
           email: req.body.email != null ? req.body.email : undefined,
-          level: req.body.level != null ? Number(req.body.level) : undefined,
+          phone: req.body.phone != null ? req.body.phone : undefined,
           team_file: pathFile != null ? pathFile : undefined,
           is_publish:
             req.body.is_publish != null
@@ -353,19 +354,85 @@ const methods = {
       res.status(400).json({ msg: error.message });
     }
   },
+
   // ลบ
   async onDelete(req, res) {
     try {
-      const item = await prisma.team.update({
+      await prisma.team.update({
         where: {
           id: Number(req.params.id),
         },
         data: {
+          level: null,
           deleted_at: new Date().toISOString(),
         },
       });
 
-      res.status(200).json(item);
+      res.status(200).json({
+        msg: "success",
+      });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  //   ChangeLevel
+  async onChangeLevel(req, res) {
+    try {
+      const item = await prisma.team.findUnique({
+        where: {
+          id: Number(req.params.id),
+        },
+      });
+
+      let item1 = null;
+
+      if (req.body.type == "up") {
+        item1 = await prisma.team.findFirst({
+          where: {
+            level: item.level - 1,
+            department_id: item.department_id,
+          },
+        });
+      }
+
+      if (req.body.type == "down") {
+        item1 = await prisma.team.findFirst({
+          where: {
+            level: item.level + 1,
+            department_id: item.department_id,
+          },
+        });
+      }
+
+      if (item1 != null) {
+        let level = item1.level;
+        let level1 = item.level;
+
+        item.level = level;
+
+        await prisma.team.update({
+          where: {
+            id: Number(req.params.id),
+          },
+          data: {
+            level: level,
+            updated_by: "arnonr",
+          },
+        });
+
+        await prisma.team.update({
+          where: {
+            id: item1.id,
+          },
+          data: {
+            level: level1,
+            updated_by: "arnonr",
+          },
+        });
+      }
+
+      res.status(200).json({ msg: "success" });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }

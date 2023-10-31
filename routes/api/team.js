@@ -14,6 +14,12 @@ router.post(
 );
 
 router.put(
+    "/change-level/:id",
+    // auth.required,
+    controllers.onChangeLevel
+  );
+
+router.put(
   "/:id",
   // auth.required,
   controllers.onUpdate

@@ -126,7 +126,7 @@ model team {
     position_level_en String?    @db.VarChar(500)
     phone             String     @db.VarChar(50)
     email             String     @db.VarChar(255)
-    level             Int
+    level             Int?
     team_file         String?    @db.VarChar(500)
     is_active         Int        @default(1)
     is_publish        Int        @default(1)
@@ -136,7 +136,6 @@ model team {
     updated_by        String?    @db.VarChar(255)
     deleted_at        DateTime?
 }
-
 model news_gallery {
     id                Int       @id @default(autoincrement())
     news_id           Int?
@@ -150,7 +149,6 @@ model news_gallery {
     updated_by        String?   @db.VarChar(255)
     deleted_at        DateTime?
 }
-
 model equipment_department {
     id         Int         @id @default(autoincrement())
     name_th    String?     @db.VarChar(500)
@@ -165,7 +163,6 @@ model equipment_department {
     deleted_at DateTime?
     equipments equipment[]
 }
-
 model equipment_category {
     id         Int         @id @default(autoincrement())
     name_th    String      @db.VarChar(500)
@@ -180,7 +177,6 @@ model equipment_category {
     deleted_at DateTime?
     equipments equipment[]
 }
-
 model equipment {
     id                      Int                  @id @default(autoincrement())
     equipment_category      equipment_category   @relation(fields: [equipment_category_id], references: [id])
@@ -219,7 +215,6 @@ model equipment_gallery {
     updated_by             String?   @db.VarChar(255)
     deleted_at             DateTime?
 }
-
 model equipment_method {
     id                       Int                        @id @default(autoincrement())
     name_th                  String                     @db.VarChar(500)
