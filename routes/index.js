@@ -9,6 +9,7 @@ const banner = require("./api/banner");
 const video = require("./api/video");
 const about = require("./api/about");
 const contact = require("./api/contact");
+const direction = require("./api/direction");
 const department = require("./api/department");
 const team = require("./api/team");
 const froala = require("./api/froala");
@@ -34,6 +35,7 @@ router.use(
   router.use("/video", video),
   router.use("/about", about),
   router.use("/contact", contact),
+  router.use("/direction", direction),
   router.use("/department", department),
   router.use("/team", team),
   router.use("/froala", froala),
