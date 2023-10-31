@@ -68,7 +68,7 @@ const countDataAndOrder = async (req, $where) => {
   if (req.query.orderBy) {
     $orderBy[req.query.orderBy] = req.query.order;
   } else {
-    $orderBy = { created_at: "desc" };
+    $orderBy = { created_at: "asc" };
   }
 
   //Count
@@ -190,10 +190,10 @@ const methods = {
           name_th: req.body.name_th,
           name_en: req.body.name_en,
           name_short: req.body.name_short,
-          is_fixrate: req.body.is_fixrate,
+          is_fixrate:  Number(req.body.is_fixrate),
           unit_th: req.body.unit_th,
           unit_en: req.body.unit_en,
-          price: req.body.price,
+          price: Number(req.body.price),
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
           updated_by: "arnonr",
@@ -232,8 +232,7 @@ const methods = {
             req.body.is_fixrate != null
               ? Number(req.body.is_fixrate)
               : undefined,
-          price:
-            req.body.price != null ? Number(req.body.price) : undefined,
+          price: req.body.price != null ? Number(req.body.price) : undefined,
           updated_by: "arnonr",
         },
       });
@@ -255,7 +254,7 @@ const methods = {
         },
       });
 
-      res.status(200).json(item);
+      res.status(200).json({ msg: "success" });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }
