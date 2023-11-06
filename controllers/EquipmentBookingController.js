@@ -158,6 +158,100 @@ const checkLanguage = (req) => {
   return prismaLang;
 };
 
+const onCheckBookingDateBeforeApprove = async (id) => {
+  try {
+    let checkID = undefined;
+
+    if (id) {
+      checkID = {
+        id: {
+          not: Number(id),
+        },
+      };
+    }
+
+    const item1 = await prisma.equipment_booking.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
+    const item = await prisma.equipment_booking.findMany({
+      where: {
+        deleted_at: null,
+        ...checkID,
+        booking_date: {
+          gte: new Date(item1.booking_date).toISOString(),
+          lte: new Date(item1.booking_date).toISOString(),
+        },
+        status_id: 2,
+      },
+    });
+
+    let check_period_time_available = [
+      {
+        id: 1,
+        value: 1,
+        name_th: "รอบเช้า (9.00- 12.00)",
+        name_en: "9.00- 12.00",
+        available: true,
+      },
+      {
+        id: 2,
+        value: 2,
+        name_th: "รอบบ่าย (13.00- 16.00)",
+        name_en: "13.00- 16.00",
+        available: true,
+      },
+      {
+        id: 3,
+        value: 3,
+        name_th: "เต็มวัน (9.00- 16.00)",
+        name_en: "9.00- 16.00",
+        available: true,
+      },
+    ];
+
+    let full_period = true;
+    let half_period = true;
+
+    if (item.length != 0) {
+      item.forEach((el) => {
+        let cp = check_period_time_available.map((x) => {
+          if (x.value == el.period_time) {
+            x.available = false;
+            // full_period = false;
+          }
+          //   if (x.id == 3) {
+          //     if (x.available == false) {
+          //       half_period = false;
+          //     }
+          //   }
+          return x;
+        });
+
+        check_period_time_available = [...cp];
+      });
+    }
+
+    console.log(item1);
+
+    if (
+      check_period_time_available[2].available == false ||
+      check_period_time_available[item1.period_time - 1].available == false ||
+      (item1.period_time == 3 &&
+        check_period_time_available[0].available == false) ||
+      (item1.period_time == 3 &&
+        check_period_time_available[1].available == false)
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  } catch (error) {
+    return { msg: error.message };
+  }
+};
+
 const methods = {
   // ค้นหาทั้งหมด
   async onGetAll(req, res) {
@@ -363,7 +457,15 @@ const methods = {
   //   อนุมัติ
   async onApprove(req, res) {
     try {
-      console.log(req.params.id);
+      let check = true;
+      if (req.body.status_id == 2) {
+        check = await onCheckBookingDateBeforeApprove(req.params.id);
+      }
+
+      if (check == false) {
+        throw new Error("Booking Duplicate");
+      }
+
       const item = await prisma.equipment_booking.update({
         where: {
           id: Number(req.params.id),
