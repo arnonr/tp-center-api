@@ -6,12 +6,19 @@ const auth = require("../auth");
 // const { checkPermission } = require("../accessControl");
 
 router.get("/", controllers.onGetAll);
+router.get("/check-booking-date", controllers.onCheckBookingDate);
 router.get("/:id", controllers.onGetById);
 
 router.post(
   "/",
   // auth.required,
   controllers.onCreate
+);
+
+router.put(
+  "/approve/:id",
+  // auth.required,
+  controllers.onApprove
 );
 
 router.put(

@@ -52,7 +52,11 @@ const filterData = (req) => {
   }
 
   if (req.query.status_id) {
-    $where["status_id"] = req.query.status_id;
+    $where["status_id"] = Number(req.query.status_id);
+  }
+
+  if (req.query.member_status) {
+    $where["member_status"] = Number(req.query.member_status);
   }
 
   if (req.query.is_publish) {
@@ -350,7 +354,118 @@ const methods = {
         },
       });
 
-      res.status(200).json(item);
+      res.status(200).json({ msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  //   อนุมัติ
+  async onApprove(req, res) {
+    try {
+      console.log(req.params.id);
+      const item = await prisma.equipment_booking.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          confirmed_date:
+            req.body.confirmed_date != null
+              ? new Date(req.body.confirmed_date)
+              : undefined,
+          status_id:
+            req.body.status_id != null ? Number(req.body.status_id) : undefined,
+          reject_comment:
+            req.body.reject_comment != null
+              ? req.body.reject_comment
+              : undefined,
+          updated_by: "arnonr",
+        },
+      });
+
+      res.status(200).json({ ...item, msg: "success" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  },
+
+  async onCheckBookingDate(req, res) {
+    try {
+      let checkID = undefined;
+      if (req.query.not_id) {
+        checkID = {
+          id: {
+            not: Number(req.query.not_id),
+          },
+        };
+      }
+      const item = await prisma.equipment_booking.findMany({
+        where: {
+          deleted_at: null,
+          ...checkID,
+          booking_date: {
+            gte: new Date(req.query.booking_date + " 00:00:00").toISOString(),
+            lte: new Date(req.query.booking_date + " 23:59:00").toISOString(),
+          },
+          status_id: 2,
+        },
+      });
+
+      let check_period_time_available = [
+        {
+          id: 1,
+          value: 1,
+          name_th: "รอบเช้า (9.00- 12.00)",
+          name_en: "9.00- 12.00",
+          available: true,
+        },
+        {
+          id: 2,
+          value: 2,
+          name_th: "รอบบ่าย (13.00- 16.00)",
+          name_en: "13.00- 16.00",
+          available: true,
+        },
+        {
+          id: 3,
+          value: 3,
+          name_th: "เต็มวัน (9.00- 16.00)",
+          name_en: "9.00- 16.00",
+          available: true,
+        },
+      ];
+
+      let full_period = true;
+      let half_period = true;
+      if (item.length != 0) {
+        item.forEach((el) => {
+          let cp = check_period_time_available.map((x) => {
+            if (x.value == el.period_time) {
+              x.available = false;
+              full_period = false;
+            }
+            if (x.id == 3) {
+              if (x.available == false) {
+                half_period = false;
+              }
+            }
+            return x;
+          });
+
+          check_period_time_available = [...cp];
+        });
+      }
+
+      check_period_time_available[2].available = full_period;
+      if (half_period == false) {
+        check_period_time_available[0].available = false;
+        check_period_time_available[1].available = false;
+      }
+
+      res.status(200).json({
+        period_available: check_period_time_available,
+        msg: "success",
+      });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }
