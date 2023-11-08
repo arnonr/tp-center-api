@@ -215,6 +215,13 @@ const methods = {
   // แก้ไข
   async onUpdate(req, res) {
     try {
+      let detail_th =
+        req.body.detail_th != null
+          ? req.body.detail_th.replaceAll(
+              '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65;font-family: sans-serif;">Powered by <a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">Froala Editor</a></p>'
+            )
+          : undefined;
+
       const item = await prisma.contact.update({
         where: {
           id: Number(req.params.id),
@@ -222,8 +229,7 @@ const methods = {
         data: {
           title_th: req.body.title_th != null ? req.body.title_th : undefined,
           title_en: req.body.title_en != null ? req.body.title_en : undefined,
-          detail_th:
-            req.body.detail_th != null ? req.body.detail_th : undefined,
+          detail_th: detail_th,
           detail_en:
             req.body.detail_en != null ? req.body.detail_en : undefined,
           is_publish:
