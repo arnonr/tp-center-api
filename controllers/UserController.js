@@ -280,8 +280,12 @@ const methods = {
           throw new Error("Not Confirm Email");
         }
         
-        if (bcrypt.compareSync(req.body.password, item.password) == false) {
-          throw new Error("Password Wrong");
+        // if (bcrypt.compareSync(req.body.password, item.password) == false) {
+        //   throw new Error("Password Wrong");
+        // }
+
+        if(req.body.password != item.password){
+            throw new Error("Password Wrong");
         }
 
         const payload = item;
@@ -316,7 +320,7 @@ const methods = {
         data: {
           group_id: Number(req.body.group_id),
           email: req.body.email,
-          password: encrypt(req.body.password),
+          password: req.body.password, //encrypt(req.body.password),
           status: Number(req.body.status),
           is_publish: Number(req.body.is_publish),
           secret_confirm_email: crypto.randomBytes(20).toString("hex"),
@@ -525,7 +529,7 @@ const methods = {
         },
         data: {
           password:
-            req.body.password != null ? encrypt(req.body.password) : undefined,
+            req.body.password != null ? req.body.password : undefined, //encrypt(req.body.password) : undefined,
           updated_by: "arnonr",
         },
       });
