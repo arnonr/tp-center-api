@@ -217,7 +217,11 @@ const methods = {
     try {
       let detail_th =
         req.body.detail_th != null
-          ? req.body.detail_th.replaceAll("Powered by", "")
+          ? req.body.detail_th
+              .replaceAll("Powered by", "")
+              .replaceAll(
+                '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">'
+              )
           : undefined;
 
       console.log(detail_th);
