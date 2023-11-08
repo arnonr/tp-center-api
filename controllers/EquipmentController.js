@@ -208,6 +208,24 @@ const checkLanguage = (req) => {
   return prismaLang;
 };
 
+const cutFroala = (detail) => {
+  let detail_success =
+    detail != null
+      ? detail
+          .replaceAll("Powered by", "")
+          .replaceAll(
+            '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">',
+            ""
+          )
+          .replaceAll(
+            '<a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">',
+            ""
+          )
+          .replaceAll("Froala Editor</a></p>", "")
+      : undefined;
+  return detail_success;
+};
+
 const methods = {
   // ค้นหาทั้งหมด
   async onGetAll(req, res) {
@@ -277,8 +295,8 @@ const methods = {
           equipment_category_id: 1,
           title_th: req.body.title_th,
           title_en: req.body.title_en,
-          detail_th: req.body.detail_th,
-          detail_en: req.body.detail_en,
+          detail_th: cutFroala(req.body.detail_th),
+          detail_en: cutFroala(req.body.detail_en),
           equipment_file: pathFile,
           rate_file: pathRateFile,
           is_publish: Number(req.body.is_publish),
@@ -308,7 +326,7 @@ const methods = {
   async onUpdate(req, res) {
     try {
       let pathFile = null;
-      if (req.body.equipment_file != 'undefined') {
+      if (req.body.equipment_file != "undefined") {
         pathFile = await uploadController.onUploadFile(
           req,
           "/images/equipment/",
@@ -321,7 +339,7 @@ const methods = {
       }
 
       let pathRateFile = null;
-      if (req.body.rate_file != 'undefined') {
+      if (req.body.rate_file != "undefined") {
         pathRateFile = await uploadController.onUploadFile(
           req,
           "/images/equipment/rate/",
@@ -344,10 +362,8 @@ const methods = {
             req.body.equipment_department_id != null
               ? Number(req.body.equipment_department_id)
               : undefined,
-          detail_th:
-            req.body.detail_th != null ? req.body.detail_th : undefined,
-          detail_en:
-            req.body.detail_en != null ? req.body.detail_en : undefined,
+          detail_th: cutFroala(req.body.detail_th),
+          detail_en: cutFroala(req.body.detail_en),
           equipment_file: pathFile != null ? pathFile : undefined,
           rate_file: pathRateFile != null ? pathRateFile : undefined,
           is_publish:

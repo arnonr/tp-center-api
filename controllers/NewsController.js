@@ -194,6 +194,24 @@ const checkLanguage = (req) => {
   return prismaLang;
 };
 
+const cutFroala = (detail) => {
+  let detail_success =
+    detail != null
+      ? detail
+          .replaceAll("Powered by", "")
+          .replaceAll(
+            '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">',
+            ""
+          )
+          .replaceAll(
+            '<a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">',
+            ""
+          )
+          .replaceAll("Froala Editor</a></p>", "")
+      : undefined;
+  return detail_success;
+};
+
 const methods = {
   // ค้นหาทั้งหมด
   async onGetAll(req, res) {
@@ -256,8 +274,8 @@ const methods = {
           news_type_id: Number(req.body.news_type_id),
           title_th: req.body.title_th,
           title_en: req.body.title_en,
-          detail_th: req.body.detail_th,
-          detail_en: req.body.detail_en,
+          detail_th: cutFroala(req.body.detail_th),
+          detail_en: cutFroala(req.body.detail_en),
           news_file: pathFile,
           is_publish: Number(req.body.is_publish),
           created_news: new Date(req.body.created_news),
@@ -306,10 +324,8 @@ const methods = {
             req.body.news_type_id != null
               ? Number(req.body.news_type_id)
               : undefined,
-          detail_th:
-            req.body.detail_th != null ? req.body.detail_th : undefined,
-          detail_en:
-            req.body.detail_en != null ? req.body.detail_en : undefined,
+          detail_th: cutFroala(req.body.detail_th),
+          detail_en: cutFroala(req.body.detail_en),
           news_file: pathFile != null ? pathFile : undefined,
           is_publish:
             req.body.is_publish != null
