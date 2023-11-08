@@ -217,13 +217,10 @@ const methods = {
     try {
       let detail_th =
         req.body.detail_th != null
-          ? req.body.detail_th.replaceAll(
-              '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65;font-family: sans-serif;">Powered by <a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">Froala Editor</a></p>',
-              ""
-            )
+          ? req.body.detail_th.replaceAll("Powered by", "")
           : undefined;
 
-          console.log(detail_th)
+      console.log(detail_th);
 
       const item = await prisma.contact.update({
         where: {
