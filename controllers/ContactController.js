@@ -223,6 +223,8 @@ const methods = {
             )
           : undefined;
 
+          console.log(detail_th)
+
       const item = await prisma.contact.update({
         where: {
           id: Number(req.params.id),
