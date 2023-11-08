@@ -220,7 +220,14 @@ const methods = {
           ? req.body.detail_th
               .replaceAll("Powered by", "")
               .replaceAll(
-                '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">'
+                '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">',
+                ""
+              ).replaceAll(
+                '<a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">',
+                ""
+              ).replaceAll(
+                'Froala Editor</a></p>',
+                ""
               )
           : undefined;
 
