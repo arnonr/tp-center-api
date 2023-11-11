@@ -25,7 +25,7 @@ const booking = require("./api/booking");
 const router = express.Router();
 
 router.use(
-  `/sicc-api/api/v${process.env.API_VERSION}`,
+  `/tcsd/api/v${process.env.API_VERSION}`,
   router.use("/user", user),
   router.use("/profile", profile),
   router.use("/news", news),

@@ -65,6 +65,12 @@ const filterData = (req) => {
     }
   }
 
+  if (req.query.not_news_type_id) {
+    $where["news_type_id"] = {
+      not: parseInt(req.query.not_news_type_id),
+    };
+  }
+
   if (req.query.news_type_id) {
     $where["news_type_id"] = parseInt(req.query.news_type_id);
   }
