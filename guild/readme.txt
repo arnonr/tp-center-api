@@ -19,3 +19,4 @@ PATH_UPLOAD = 'http://sci.kmutnb.ac.th/sicc-static/uploads'
 app.use("/sicc-static", express.static(__dirname + "/public"));
 และไปตั้งค่า nginx reverse proxy manager custom location
 /sicc-static ไปที่ port api
+
