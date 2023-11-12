@@ -364,3 +364,35 @@ model direction {
     updated_by      String?   @db.VarChar(255)
     deleted_at      DateTime?
 }
+
+model services {
+    id              Int       @id @default(autoincrement())
+    title_th        String    @db.VarChar(500)
+    title_en        String?   @db.VarChar(500)
+    detail_th       String?   @db.LongText
+    detail_en       String?   @db.LongText
+    service_file    String?   @db.VarChar(500)
+    is_active       Int       @default(1)
+    is_publish      Int       @default(1)
+    count_views     Int       @default(0)
+    created_service DateTime  @db.Date
+    created_at      DateTime? @default(now()) @db.DateTime(0)
+    created_by      String?   @db.VarChar(255)
+    updated_at      DateTime? @updatedAt
+    updated_by      String?   @db.VarChar(255)
+    deleted_at      DateTime?
+}
+
+model services_gallery {
+    id                   Int       @id @default(autoincrement())
+    service_id           Int?
+    secret_key           String    @db.VarChar(255)
+    service_gallery_file String    @db.VarChar(500)
+    is_active            Int       @default(1)
+    is_publish           Int       @default(1)
+    created_at           DateTime? @default(now()) @db.DateTime(0)
+    created_by           String    @db.VarChar(255)
+    updated_at           DateTime? @updatedAt
+    updated_by           String?   @db.VarChar(255)
+    deleted_at           DateTime?
+}

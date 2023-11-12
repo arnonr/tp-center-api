@@ -72,11 +72,21 @@ const methods = {
         res.status(500).send("error");
       } else {
         let data = {};
-        data[table_name + "_id"] =
-          req.body[table_name + "_id"] != "null"
-            ? Number(req.body[table_name + "_id"])
-            : null;
-        data[table_name + "_gallery_file"] = pathFile;
+
+        if (table_name == "services") {
+          data["service_id"] =
+            req.body["service_id"] != "null"
+              ? Number(req.body[table_name + "service_id"])
+              : null;
+          data["service_gallery_file"] = pathFile;
+        } else {
+          data[table_name + "_id"] =
+            req.body[table_name + "_id"] != "null"
+              ? Number(req.body[table_name + "_id"])
+              : null;
+          data[table_name + "_gallery_file"] = pathFile;
+        }
+
         data["secret_key"] = req.body.secret_key;
         data["is_publish"] = 1;
         data["created_by"] = "arnonr";
