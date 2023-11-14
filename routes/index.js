@@ -23,11 +23,12 @@ const equipmentMethod = require("./api/equipment-method");
 const booking = require("./api/booking");
 const services = require("./api/services");
 const servicesGallery = require("./api/services-gallery");
+const bill = require("./api/bill");
 
 const router = express.Router();
 
 router.use(
-  `/tcsd/api/v${process.env.API_VERSION}`,
+  `${process.env.SUB_URL}/api/v${process.env.API_VERSION}`,
   router.use("/user", user),
   router.use("/profile", profile),
   router.use("/news", news),
@@ -51,6 +52,7 @@ router.use(
   router.use("/booking", booking),
   router.use("/services", services),
   router.use("/services-gallery", servicesGallery),
+  router.use("/bill", bill),
 );
 
 module.exports = router;
