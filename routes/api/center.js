@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const controllers = require("../../controllers/TeamController");
+const controllers = require("../../controllers/CenterController");
 const auth = require("../auth");
+// const { checkPermission } = require("../accessControl");
 
 router.get("/", controllers.onGetAll);
 router.get("/:id", controllers.onGetById);
@@ -12,12 +13,6 @@ router.post(
   // auth.required,
   controllers.onCreate
 );
-
-router.put(
-    "/change-level/:id",
-    // auth.required,
-    controllers.onChangeLevel
-  );
 
 router.put(
   "/:id",

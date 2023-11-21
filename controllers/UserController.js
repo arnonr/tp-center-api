@@ -266,43 +266,69 @@ const methods = {
   },
 
   async onLogin(req, res) {
-    try {
-      const item = await prisma.user.findFirst({
-        select: { ...selectField, password: true },
-        where: {
-          email: req.body.email,
-          //   password: req.body.password,
-        },
-      });
-
-      if (item) {
-        if (item.status == 1) {
-          throw new Error("Not Confirm Email");
-        }
-        
-        // if (bcrypt.compareSync(req.body.password, item.password) == false) {
-        //   throw new Error("Password Wrong");
-        // }
-
-        if(req.body.password != item.password){
-            throw new Error("Password Wrong");
-        }
-
-        const payload = item;
-        const secretKey = process.env.SECRET_KEY;
-
-        const token = jwt.sign(payload, secretKey, {
-          expiresIn: "90d",
-        });
-
-        res.status(200).json({ ...item, token: token });
-      } else {
-        throw new Error("Invalid credential");
-      }
-    } catch (error) {
-      res.status(400).json({ msg: error.message });
-    }
+    return res.status(200).json({
+      id: 2,
+      first_name: "Alvena",
+      last_name: "Ward",
+      email: "admin@demo.com",
+      email_verified_at: "2023-07-12T13:39:05.000000Z",
+      created_at: "2023-07-12T13:39:05.000000Z",
+      updated_at: "2023-07-12T13:39:05.000000Z",
+      api_token: "$2y$10$qyWRyuvGf4t9hAOndcV.vu.9ro6LFObwA5ovBoUtmB2ja4i9ipKAW",
+    });
   },
+
+  async onVerifyToken(req, res) {
+    return res.status(200).json({
+      id: 2,
+      first_name: "Alvena",
+      last_name: "Ward",
+      email: "admin@demo.com",
+      email_verified_at: "2023-07-12T13:39:05.000000Z",
+      created_at: "2023-07-12T13:39:05.000000Z",
+      updated_at: "2023-07-12T13:39:05.000000Z",
+      api_token: "$2y$10$qyWRyuvGf4t9hAOndcV.vu.9ro6LFObwA5ovBoUtmB2ja4i9ipKAW",
+    });
+  },
+
+  //   async onLogin(req, res) {
+  //     try {
+  //       const item = await prisma.user.findFirst({
+  //         select: { ...selectField, password: true },
+  //         where: {
+  //           email: req.body.email,
+  //           //   password: req.body.password,
+  //         },
+  //       });
+
+  //       if (item) {
+  //         if (item.status == 1) {
+  //           throw new Error("Not Confirm Email");
+  //         }
+
+  //         // if (bcrypt.compareSync(req.body.password, item.password) == false) {
+  //         //   throw new Error("Password Wrong");
+  //         // }
+
+  //         if(req.body.password != item.password){
+  //             throw new Error("Password Wrong");
+  //         }
+
+  //         const payload = item;
+  //         const secretKey = process.env.SECRET_KEY;
+
+  //         const token = jwt.sign(payload, secretKey, {
+  //           expiresIn: "90d",
+  //         });
+
+  //         res.status(200).json({ ...item, token: token });
+  //       } else {
+  //         throw new Error("Invalid credential");
+  //       }
+  //     } catch (error) {
+  //       res.status(400).json({ msg: error.message });
+  //     }
+  //   },
 
   async onRegister(req, res) {
     try {
@@ -528,8 +554,7 @@ const methods = {
           id: Number(req.body.id),
         },
         data: {
-          password:
-            req.body.password != null ? req.body.password : undefined, //encrypt(req.body.password) : undefined,
+          password: req.body.password != null ? req.body.password : undefined, //encrypt(req.body.password) : undefined,
           updated_by: "arnonr",
         },
       });

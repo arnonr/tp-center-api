@@ -1,22 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const uploadController = require("./UploadsController");
-
-const prisma = new PrismaClient().$extends({
-  result: {
-    team: {
-      team_file: {
-        needs: { team_file: true },
-        compute(team) {
-          let file = null;
-          if (team.team_file != null) {
-            file = process.env.PATH_UPLOAD + team.team_file;
-          }
-          return file;
-        },
-      },
-    },
-  },
-});
+const prisma = new PrismaClient();
 
 // ค้นหา
 const filterData = (req) => {
@@ -28,51 +12,38 @@ const filterData = (req) => {
     $where["id"] = parseInt(req.query.id);
   }
 
-  if (req.query.lang && req.query.lang == "en") {
-    $where["firstname_en"] = {
-      not: null,
-      not: "",
+  if (req.query.prefix) {
+    $where["prefix"] = {
+      contains: req.query.prefix,
     };
   }
 
-  if (req.query.prefix_th) {
-    $where["prefix_th"] = {
-      contains: req.query.prefix_th,
+  if (req.query.firstname) {
+    $where["firstname"] = {
+      contains: req.query.firstname,
     };
   }
 
-  if (req.query.prefix_en) {
-    $where["prefix_en"] = {
-      contains: req.query.prefix_en,
+  if (req.query.surname) {
+    $where["surname"] = {
+      contains: req.query.surname,
     };
   }
 
-  if (req.query.firstname_th) {
-    $where["firstname_th"] = {
-      contains: req.query.firstname_th,
+  if (req.query.position) {
+    $where["position"] = {
+      contains: req.query.position,
     };
   }
 
-  if (req.query.firstname_en) {
-    $where["firstname_en"] = {
-      contains: req.query.firstname_en,
+  if (req.query.position_level) {
+    $where["position_level"] = {
+      contains: req.query.position_level,
     };
   }
 
-  if (req.query.surname_th) {
-    $where["surname_th"] = {
-      contains: req.query.surname_th,
-    };
-  }
-
-  if (req.query.surname_en) {
-    $where["surname_en"] = {
-      contains: req.query.surname_en,
-    };
-  }
-
-  if (req.query.department_id) {
-    $where["department_id"] = parseInt(req.query.department_id);
+  if (req.query.center_id) {
+    $where["center_id"] = parseInt(req.query.center_id);
   }
 
   if (req.query.is_publish) {
@@ -93,7 +64,7 @@ const countDataAndOrder = async (req, $where) => {
   }
 
   //Count
-  let $count = await prisma.team.findMany({
+  let $count = await prisma.administrator.findMany({
     where: $where,
   });
 
@@ -117,27 +88,20 @@ const countDataAndOrder = async (req, $where) => {
 // ฟิลด์ที่ต้องการ Select รวมถึง join
 const selectField = {
   id: true,
-  prefix_th: true,
-  prefix_en: true,
-  firstname_th: true,
-  firstname_en: true,
-  surname_th: true,
-  surname_en: true,
-  position_th: true,
-  position_en: true,
-  position_level_th: true,
-  position_level_en: true,
+  prefix: true,
+  firstname: true,
+  surname: true,
+  position: true,
+  position_level: true,
   phone: true,
   email: true,
   level: true,
-  department_id: true,
+  center_id: true,
   team_file: true,
   is_publish: true,
-  department: {
+  center: {
     select: {
       name_th: true,
-      name_en: true,
-      name: true,
     },
   },
   prefix: true,
@@ -147,68 +111,6 @@ const selectField = {
   position_level: true,
 };
 
-// ปรับ Language
-const checkLanguage = (req) => {
-  let prismaLang = prisma.$extends({
-    result: {
-      team: {
-        prefix: {
-          needs: { prefix_th: true },
-          compute(table) {
-            return req.query.lang && req.query.lang == "en"
-              ? table.prefix_en
-              : table.prefix_th;
-          },
-        },
-        firstname: {
-          needs: { firstname_th: true },
-          compute(table) {
-            return req.query.lang && req.query.lang == "en"
-              ? table.firstname_en
-              : table.firstname_th;
-          },
-        },
-        surname: {
-          needs: { surname_th: true },
-          compute(table) {
-            return req.query.lang && req.query.lang == "en"
-              ? table.surname_en
-              : table.surname_th;
-          },
-        },
-        position: {
-          needs: { position_th: true },
-          compute(table) {
-            return req.query.lang && req.query.lang == "en"
-              ? table.position_en
-              : table.position_th;
-          },
-        },
-        position_level: {
-          needs: { position_level_th: true },
-          compute(table) {
-            return req.query.lang && req.query.lang == "en"
-              ? table.position_level_en
-              : table.position_level_th;
-          },
-        },
-      },
-      department: {
-        name: {
-          needs: { name_th: true },
-          compute(table) {
-            return req.query.lang && req.query.lang == "en"
-              ? table.name_en
-              : table.name_th;
-          },
-        },
-      },
-    },
-  });
-
-  return prismaLang;
-};
-
 const methods = {
   // ค้นหาทั้งหมด
   async onGetAll(req, res) {
@@ -216,9 +118,7 @@ const methods = {
       let $where = filterData(req);
       let other = await countDataAndOrder(req, $where);
 
-      let prismaLang = checkLanguage(req);
-
-      const item = await prismaLang.team.findMany({
+      const item = await prisma.administrator.findMany({
         select: selectField,
         where: $where,
         orderBy: other.$orderBy,
@@ -240,9 +140,7 @@ const methods = {
   // ค้นหาเรคคอร์ดเดียว
   async onGetById(req, res) {
     try {
-      let prismaLang = checkLanguage(req);
-
-      const item = await prismaLang.team.findUnique({
+      const item = await prisma.administrator.findUnique({
         select: selectField,
         where: {
           id: Number(req.params.id),
@@ -259,7 +157,7 @@ const methods = {
     try {
       let pathFile = await uploadController.onUploadFile(
         req,
-        "/images/team/",
+        "/images/administrator/",
         "team_file"
       );
 
@@ -267,8 +165,8 @@ const methods = {
         return res.status(500).send("error");
       }
 
-      const checkLevel = await prisma.team.findFirst({
-        where: { department_id: Number(req.body.department_id) },
+      const checkLevel = await prisma.administrator.findFirst({
+        where: { center_id: Number(req.body.center_id) },
         orderBy: {
           level: "desc",
         },
@@ -278,19 +176,19 @@ const methods = {
       if (checkLevel) {
         level = checkLevel.level + 1;
       }
+      console.log(level);
 
-      const item = await prisma.team.create({
+      const item = await prisma.administrator.create({
         data: {
-          department_id: Number(req.body.department_id),
-          prefix_th: req.body.prefix_th,
-          prefix_en: req.body.prefix_en,
-          firstname_th: req.body.firstname_th,
-          firstname_en: req.body.firstname_en,
-          surname_th: req.body.surname_th,
-          surname_en: req.body.surname_en,
-          email: req.body.email,
-          phone: req.body.phone,
-          level: level,
+          center_id: Number(req.body.center_id),
+          prefix: req.body.prefix,
+          firstname: req.body.firstname,
+          surname: req.body.surname,
+          position: req.body.position,
+          //   position_level: req.body.position_level,
+          //   email: req.body.email,
+          //   phone: req.body.phone,
+          //   level: level,
           team_file: pathFile,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
@@ -308,7 +206,7 @@ const methods = {
     try {
       let pathFile = await uploadController.onUploadFile(
         req,
-        "/images/team/",
+        "/images/administrator/",
         "team_file"
       );
 
@@ -316,28 +214,18 @@ const methods = {
         return res.status(500).send("error");
       }
 
-      const item = await prisma.team.update({
+      const item = await prisma.administrator.update({
         where: {
           id: Number(req.params.id),
         },
         data: {
-          department_id:
-            req.body.department_id != null
-              ? Number(req.body.department_id)
-              : undefined,
-          prefix_th:
-            req.body.prefix_th != null ? req.body.prefix_th : undefined,
-          prefix_en:
-            req.body.prefix_en != null ? req.body.prefix_en : undefined,
-          firstname_th:
-            req.body.firstname_th != null ? req.body.firstname_th : undefined,
-          firstname_en:
-            req.body.firstname_en != null ? req.body.firstname_en : undefined,
-          surname_th:
-            req.body.surname_th != null ? req.body.surname_th : undefined,
-          surname_en:
-            req.body.surname_en != null ? req.body.surname_en : undefined,
-
+          center_id:
+            req.body.center_id != null ? Number(req.body.center_id) : undefined,
+          prefix: req.body.prefix != null ? req.body.prefix : undefined,
+          firstname:
+            req.body.firstname != null ? req.body.firstname : undefined,
+          surname: req.body.surname != null ? req.body.surname : undefined,
+          position: req.body.position != null ? req.body.position : undefined,
           email: req.body.email != null ? req.body.email : undefined,
           phone: req.body.phone != null ? req.body.phone : undefined,
           team_file: pathFile != null ? pathFile : undefined,
@@ -358,7 +246,7 @@ const methods = {
   // ลบ
   async onDelete(req, res) {
     try {
-      await prisma.team.update({
+      await prisma.administrator.update({
         where: {
           id: Number(req.params.id),
         },
@@ -379,7 +267,7 @@ const methods = {
   //   ChangeLevel
   async onChangeLevel(req, res) {
     try {
-      const item = await prisma.team.findUnique({
+      const item = await prisma.administrator.findUnique({
         where: {
           id: Number(req.params.id),
         },
@@ -388,19 +276,19 @@ const methods = {
       let item1 = null;
 
       if (req.body.type == "up") {
-        item1 = await prisma.team.findFirst({
+        item1 = await prisma.administrator.findFirst({
           where: {
             level: item.level - 1,
-            department_id: item.department_id,
+            center_id: item.center_id,
           },
         });
       }
 
       if (req.body.type == "down") {
-        item1 = await prisma.team.findFirst({
+        item1 = await prisma.administrator.findFirst({
           where: {
             level: item.level + 1,
-            department_id: item.department_id,
+            center_id: item.center_id,
           },
         });
       }
@@ -411,7 +299,7 @@ const methods = {
 
         item.level = level;
 
-        await prisma.team.update({
+        await prisma.center.update({
           where: {
             id: Number(req.params.id),
           },
@@ -421,7 +309,7 @@ const methods = {
           },
         });
 
-        await prisma.team.update({
+        await prisma.center.update({
           where: {
             id: item1.id,
           },

@@ -6,6 +6,7 @@ const auth = require("../auth");
 // const { checkPermission } = require("../accessControl");
 
 router.post("/login", controllers.onLogin);
+router.post("/verify-token", controllers.onVerifyToken);
 router.post("/register", controllers.onRegister);
 router.post("/confirm-email", controllers.onConfirmEmail);
 router.post("/resend-confirm-email", controllers.onResendConfirmEmail);
