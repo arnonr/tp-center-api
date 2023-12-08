@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controllers = require("../../controllers/InspectionController");
+const controllers = require("../../controllers/GroupController");
 const auth = require("../auth");
 // const { checkPermission } = require("../accessControl");
 
@@ -14,17 +14,11 @@ router.post(
   controllers.onCreate
 );
 
-router.post(
+router.put(
   "/:id",
   // auth.required,
   controllers.onUpdate
 );
-
-// router.put(
-//   "/:id",
-//   // auth.required,
-//   controllers.onUpdate
-// );
 
 router.delete(
   "/:id",

@@ -101,7 +101,7 @@ const countDataAndOrder = async (req, $where) => {
   if (req.query.orderBy) {
     $orderBy[req.query.orderBy] = req.query.order;
   } else {
-    $orderBy = { created_at: "asc" };
+    $orderBy = { created_at: "desc" };
   }
 
   //Count
@@ -192,7 +192,7 @@ const methods = {
     try {
       let pathFile = await uploadController.onUploadFile(
         req,
-        "/images/inspection/",
+        "/document/inspection/",
         "inspection_file"
       );
 
@@ -200,19 +200,57 @@ const methods = {
         return res.status(500).send("error");
       }
 
-      //
-      //   let codeLastest = await prisma.inspection.findMany({
-      //     where: { code: "desc" },
-      //     orderBy: other.$orderBy,
-      //     take: 1,
-      //   });
-      //   let code = codeLastest.code.split("-");
-      //   let runCode = code[0].substring(5, code[0].length);
-      let code = 1;
+      //   check data
+      let type_text = "TPREP";
+      let year = req.body.inspection_date.substring(0, 4);
+      let center = await prisma.center.findUnique({
+        where: { id: Number(req.body.center_id) },
+      });
+
+      if (req.body.type == 2) {
+        type_text = "TPCER";
+      }
+
+      console.log(year);
+      console.log(center.code);
+      console.log(type_text);
+
+      let codeLastest = await prisma.inspection.findMany({
+        where: {
+          code: {
+            contains: type_text,
+            endsWith: "-" + year + "-" + center.code,
+          },
+          deleted_at: null,
+        },
+        orderBy: { id: "desc" },
+        take: 1,
+      });
+
+      let run_code = null;
+      if (codeLastest.length != 0) {
+        let code = codeLastest[0].code.split("-");
+        let code_split = code[0].substring(5, code[0].length);
+        console.log(code_split);
+        let code2 = Number(code_split) + 1;
+
+        if (code2.toString().length == 1) {
+          run_code = type_text + "000" + code2 + "-" + year + "-" + center.code;
+        } else if (code2.toString().length == 2) {
+          run_code = type_text + "00" + code2 + "-" + year + "-" + center.code;
+        } else if (code2.toString().length == 3) {
+          run_code = type_text + "0" + code2 + "-" + year + "-" + center.code;
+        } else {
+          run_code = type_text + code2 + "-" + year + "-" + center.code;
+        }
+      } else {
+        run_code = type_text + "0001" + "-" + year + "-" + center.code;
+      }
+
       const item = await prisma.inspection.create({
         data: {
           center_id: Number(req.body.center_id),
-          code: code,
+          code: run_code,
           name: req.body.name,
           company_name: req.body.company_name,
           inspection_date: new Date(req.body.inspection_date),
@@ -251,7 +289,7 @@ const methods = {
           code: req.body.code != null ? req.body.code : undefined,
           name: req.body.name != null ? req.body.name : undefined,
           inspection_date:
-            body.inspection_date != null
+            req.body.inspection_date != null
               ? new Date(req.body.inspection_date)
               : undefined,
           center_id:

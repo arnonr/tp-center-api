@@ -108,10 +108,14 @@ model group {
 
 model user {
     id                   Int       @id @default(autoincrement())
+    username             String?    @db.VarChar(500)
+    name                 String    @db.VarChar(1000)
     group                group     @relation(fields: [group_id], references: [id])
     group_id             Int
+    center               center?   @relation(fields: [center_id], references: [id])
+    center_id            Int?
     profile              profile?
-    email                String    @db.VarChar(500)
+    email                String?    @db.VarChar(500)
     secret_confirm_email String?   @db.VarChar(500)
     password             String?   @db.VarChar(500)
     status               Int       @default(1)
@@ -214,6 +218,7 @@ model center {
     administrator  administrator[]
     project        project[]
     inspection     inspection[]
+    user           user[]
 }
 
 model administrator {

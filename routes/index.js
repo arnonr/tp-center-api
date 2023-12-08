@@ -7,6 +7,7 @@ const administrator = require("./api/administrator");
 const projectType = require("./api/project-type");
 const project = require("./api/project");
 const inspection = require("./api/inspection");
+const group = require("./api/group");
 const router = express.Router();
 
 router.use(
@@ -18,6 +19,7 @@ router.use(
   router.use("/project-type", projectType),
   router.use("/project", project),
   router.use("/inspection", inspection),
+  router.use("/group", group),
 );
 
 module.exports = router;

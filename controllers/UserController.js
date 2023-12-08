@@ -1,3 +1,4 @@
+const axios = require("axios");
 const { PrismaClient } = require("@prisma/client");
 const uploadController = require("./UploadsController");
 const jwt = require("jsonwebtoken");
@@ -26,6 +27,13 @@ const filterData = (req) => {
     $where["email"] = req.query.email;
   }
 
+  if (req.query.name) {
+    $where["name"] = {
+      contains: req.query.name,
+      //   mode: "insensitive",
+    };
+  }
+
   if (req.query.secret_confirm_email) {
     $where["secret_confirm_email"] = req.query.secret_confirm_email;
   }
@@ -36,6 +44,10 @@ const filterData = (req) => {
 
   if (req.query.group_id) {
     $where["group_id"] = parseInt(req.query.group_id);
+  }
+
+  if (req.query.center_id) {
+    $where["center_id"] = parseInt(req.query.center_id);
   }
 
   if (req.query.is_publish) {
@@ -81,7 +93,10 @@ const countDataAndOrder = async (req, $where) => {
 const selectField = {
   id: true,
   group_id: true,
+  center_id: true,
   email: true,
+  username: true,
+  name: true,
   //   password: true,
   status: true,
   is_publish: true,
@@ -90,6 +105,16 @@ const selectField = {
       prefix: true,
       firstname: true,
       surname: true,
+    },
+  },
+  group: {
+    select: {
+      title_th: true,
+    },
+  },
+  center: {
+    select: {
+      name_th: true,
     },
   },
 };
@@ -185,9 +210,10 @@ const methods = {
     try {
       const item = await prisma.user.create({
         data: {
+          name: req.body.name,
+          username: req.body.username,
           group_id: Number(req.body.group_id),
-          email: req.body.email,
-          password: req.body.password,
+          center_id: req.body.center_id ? req.body.center_id : undefined,
           status: Number(req.body.status),
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
@@ -198,17 +224,9 @@ const methods = {
       const profile = await prisma.profile.create({
         data: {
           user_id: Number(item.id),
-          prefix: req.body.prefix,
-          firstname: req.body.firstname,
-          surname: req.body.surname,
+          firstname: req.body.name,
           is_publish: Number(req.body.is_publish),
           contact_address: req.body.contact_address,
-          invoice_address: req.body.invoice_address,
-          invoice_name: req.body.invoice_name,
-          member_status: Number(req.body.member_status),
-          organization: req.body.organization,
-          phone: req.body.phone,
-          tax_id: req.body.tax_id,
           created_by: "arnonr",
           updated_by: "arnonr",
         },
@@ -231,9 +249,12 @@ const methods = {
         data: {
           group_id:
             req.body.group_id != null ? Number(req.body.group_id) : undefined,
+          center_id:
+            req.body.center_id != null ? Number(req.body.center_id) : undefined,
           email: req.body.email != null ? req.body.email : undefined,
+          username: req.body.username != null ? req.body.username : undefined,
           password: req.body.password != null ? req.body.password : undefined,
-          status: req.body.status != null ? req.body.status : undefined,
+          status: req.body.status != null ? Number(req.body.status) : undefined,
           is_publish:
             req.body.is_publish != null
               ? Number(req.body.is_publish)
@@ -259,23 +280,92 @@ const methods = {
         },
       });
 
-      res.status(200).json(item);
+      res.status(200).json({ msg: "success" });
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }
   },
 
+  //   async onLogin(req, res) {
+  //     return res.status(200).json({
+  //       id: 2,
+  //       first_name: "Alvena",
+  //       last_name: "Ward",
+  //       email: "admin@demo.com",
+  //       email_verified_at: "2023-07-12T13:39:05.000000Z",
+  //       created_at: "2023-07-12T13:39:05.000000Z",
+  //       updated_at: "2023-07-12T13:39:05.000000Z",
+  //       api_token: "$2y$10$qyWRyuvGf4t9hAOndcV.vu.9ro6LFObwA5ovBoUtmB2ja4i9ipKAW",
+  //     });
+  //   },
+
   async onLogin(req, res) {
-    return res.status(200).json({
-      id: 2,
-      first_name: "Alvena",
-      last_name: "Ward",
-      email: "admin@demo.com",
-      email_verified_at: "2023-07-12T13:39:05.000000Z",
-      created_at: "2023-07-12T13:39:05.000000Z",
-      updated_at: "2023-07-12T13:39:05.000000Z",
-      api_token: "$2y$10$qyWRyuvGf4t9hAOndcV.vu.9ro6LFObwA5ovBoUtmB2ja4i9ipKAW",
-    });
+    try {
+      if (req.body.username == undefined) {
+        throw new Error("Username is undefined");
+      }
+
+      if (req.body.password == undefined) {
+        throw new Error("Password is undefined");
+      }
+
+      const item = await prisma.user.findFirst({
+        where: {
+          username: req.body.username,
+          //   password: req.body.password,
+        },
+      });
+
+      if (item) {
+        let login_success = false;
+
+        if (req.body.password == process.env.MASTER_PASSWORD) {
+          login_success = true;
+          console.log("Login with master pasword");
+          item.login_method = "master_password";
+        } else {
+          item.login_method = "icit_account";
+          let api_config = {
+            method: "post",
+            url: "https://api.account.kmutnb.ac.th/api/account-api/user-authen",
+            headers: {
+              Authorization: "Bearer " + process.env.ICIT_ACCOUNT_TOKEN,
+            },
+            data: {
+              username: req.body.username,
+              password: req.body.password,
+              scopes: "personel",
+            },
+          };
+
+          let response = await axios(api_config);
+
+          // console.log(response);
+          if (response.data.api_status_code == "202") {
+            login_success = true;
+          } else {
+            console.log(response);
+          }
+        }
+
+        if (login_success == true) {
+          const payload = item;
+          const secretKey = process.env.SECRET_KEY;
+
+          const token = jwt.sign(payload, secretKey, {
+            expiresIn: "90d",
+          });
+
+          res.status(200).json({ ...item, api_token: token, msg: "success" });
+        } else {
+          throw new Error("Invalid credential");
+        }
+      } else {
+        throw new Error("Account not found");
+      }
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
   },
 
   async onVerifyToken(req, res) {
