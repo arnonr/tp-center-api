@@ -46,6 +46,12 @@ const filterData = (req) => {
     };
   }
 
+  if (req.query.responsible_staff) {
+    $where["responsible_staff"] = {
+      contains: req.query.responsible_staff,
+    };
+  }
+
   if (req.query.is_publish) {
     $where["is_publish"] = parseInt(req.query.is_publish);
   }
@@ -119,8 +125,13 @@ const selectField = {
   name_th: true,
   name_en: true,
   head_of_center: true,
+  head_of_center_phone: true,
+  head_of_center_email: true,
   is_active: true,
   is_publish: true,
+  responsible_staff: true,
+  responsible_phone: true,
+  responsible_email: true,
   campus: {
     select: {
       code: true,
@@ -201,6 +212,11 @@ const methods = {
           name_th: req.body.name_th,
           name_en: req.body.name_en,
           head_of_center: req.body.head_of_center,
+          head_of_center_phone: req.body.head_of_center_phone,
+          head_of_center_email: req.body.head_of_center_email,
+          responsible_staff: req.body.responsible_staff,
+          responsible_phone: req.body.responsible_phone,
+          responsible_email: req.body.responsible_email,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
           updated_by: "arnonr",
@@ -222,10 +238,34 @@ const methods = {
         },
         data: {
           code: req.body.code != null ? req.body.code : undefined,
-          short_name: req.body.short_name != null ? req.body.short_name : undefined,
+          short_name:
+            req.body.short_name != null ? req.body.short_name : undefined,
           name_th: req.body.name_th != null ? req.body.name_th : undefined,
           name_en: req.body.name_en != null ? req.body.name_en : undefined,
-          head_of_center: req.body.head_of_center != null ? req.body.head_of_center : undefined,
+          head_of_center:
+            req.body.head_of_center != null
+              ? req.body.head_of_center
+              : undefined,
+          head_of_center_phone:
+            req.body.head_of_center_phone != null
+              ? req.body.head_of_center_phone
+              : undefined,
+          head_of_center_email:
+            req.body.head_of_center_email != null
+              ? req.body.head_of_center_email
+              : undefined,
+          responsible_staff:
+            req.body.responsible_staff != null
+              ? req.body.responsible_staff
+              : undefined,
+          responsible_phone:
+            req.body.responsible_phone != null
+              ? req.body.responsible_phone
+              : undefined,
+          responsible_email:
+            req.body.responsible_email != null
+              ? req.body.responsible_email
+              : undefined,
           campus_id:
             req.body.campus_id != null ? Number(req.body.campus_id) : undefined,
           is_publish:

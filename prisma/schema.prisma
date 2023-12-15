@@ -108,14 +108,14 @@ model group {
 
 model user {
     id                   Int       @id @default(autoincrement())
-    username             String?    @db.VarChar(500)
+    username             String?   @db.VarChar(500)
     name                 String    @db.VarChar(1000)
     group                group     @relation(fields: [group_id], references: [id])
     group_id             Int
     center               center?   @relation(fields: [center_id], references: [id])
     center_id            Int?
     profile              profile?
-    email                String?    @db.VarChar(500)
+    email                String?   @db.VarChar(500)
     secret_confirm_email String?   @db.VarChar(500)
     password             String?   @db.VarChar(500)
     status               Int       @default(1)
@@ -200,25 +200,30 @@ model campus {
 }
 
 model center {
-    id             Int             @id @default(autoincrement())
-    campus         campus          @relation(fields: [campus_id], references: [id])
-    campus_id      Int
-    code           String          @db.VarChar(255)
-    short_name     String          @db.VarChar(255)
-    name_th        String?         @db.VarChar(500)
-    name_en        String?         @db.VarChar(500)
-    head_of_center String?         @db.VarChar(500)
-    is_active      Int             @default(1)
-    is_publish     Int             @default(1)
-    created_at     DateTime?       @default(now()) @db.DateTime(0)
-    created_by     String?         @db.VarChar(255)
-    updated_at     DateTime?       @updatedAt
-    updated_by     String?         @db.VarChar(255)
-    deleted_at     DateTime?
-    administrator  administrator[]
-    project        project[]
-    inspection     inspection[]
-    user           user[]
+    id                   Int             @id @default(autoincrement())
+    campus               campus          @relation(fields: [campus_id], references: [id])
+    campus_id            Int
+    code                 String          @db.VarChar(255)
+    short_name           String          @db.VarChar(255)
+    name_th              String?         @db.VarChar(500)
+    name_en              String?         @db.VarChar(500)
+    head_of_center       String?         @db.VarChar(500)
+    head_of_center_phone String?         @db.VarChar(500)
+    head_of_center_email String?         @db.VarChar(500)
+    is_active            Int             @default(1)
+    is_publish           Int             @default(1)
+    created_at           DateTime?       @default(now()) @db.DateTime(0)
+    created_by           String?         @db.VarChar(255)
+    updated_at           DateTime?       @updatedAt
+    updated_by           String?         @db.VarChar(255)
+    deleted_at           DateTime?
+    administrator        administrator[]
+    project              project[]
+    inspection           inspection[]
+    user                 user[]
+    responsible_staff    String?         @db.VarChar(500)
+    responsible_phone    String?         @db.VarChar(500)
+    responsible_email    String?         @db.VarChar(500)
 }
 
 model administrator {
