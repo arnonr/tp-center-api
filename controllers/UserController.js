@@ -211,7 +211,7 @@ const methods = {
       const item = await prisma.user.create({
         data: {
           name: req.body.name,
-          username: req.body.username,
+          //   username: req.body.username,
           group_id: Number(req.body.group_id),
           center_id: req.body.center_id ? req.body.center_id : undefined,
           status: Number(req.body.status),
@@ -309,7 +309,7 @@ const methods = {
         throw new Error("Password is undefined");
       }
 
-      const item = await prisma.user.findFirst({
+      let item = await prisma.user.findFirst({
         where: {
           username: req.body.username,
           //   password: req.body.password,
@@ -361,7 +361,71 @@ const methods = {
           throw new Error("Invalid credential");
         }
       } else {
-        throw new Error("Account not found");
+        // กรณีไม่มีข้อมูลในฐานข้อมูล
+        let login_success = false;
+
+        let api_config = {
+          method: "post",
+          url: "https://api.account.kmutnb.ac.th/api/account-api/user-authen",
+          headers: {
+            Authorization: "Bearer " + process.env.ICIT_ACCOUNT_TOKEN,
+          },
+          data: {
+            username: req.body.username,
+            password: req.body.password,
+            scopes: "personel",
+          },
+        };
+
+        let response = await axios(api_config);
+        let error = 1;
+
+        // console.log(response);
+        if (response.data.api_status_code == "202") {
+          // find in db
+          // ถ้าเจอ คือ success ถ้าไม่เจอคือ not found
+
+          const checkDB = await prisma.user.findFirst({
+            where: {
+              name: response.data.userInfo.displayname,
+            },
+          });
+
+          if (!checkDB) {
+            login_success = false;
+            error = 2;
+          } else {
+            item = await prisma.user.update({
+              where: {
+                id: Number(checkDB.id),
+              },
+              data: {
+                username: response.data.userInfo.username,
+                updated_by: "arnonr",
+              },
+            });
+            login_success = true;
+          }
+        } else {
+          console.log(response);
+        }
+
+        if (login_success == true) {
+          const payload = item;
+          const secretKey = process.env.SECRET_KEY;
+
+          const token = jwt.sign(payload, secretKey, {
+            expiresIn: "90d",
+          });
+
+          res.status(200).json({ ...item, api_token: token, msg: "success" });
+        } else {
+          if (error == 2) {
+            throw new Error("Account not found");
+          } else {
+            throw new Error("Invalid credential");
+          }
+        }
       }
     } catch (error) {
       res.status(400).json({ msg: error.message });
