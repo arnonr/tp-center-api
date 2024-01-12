@@ -224,6 +224,12 @@ model center {
     responsible_staff    String?         @db.VarChar(500)
     responsible_phone    String?         @db.VarChar(500)
     responsible_email    String?         @db.VarChar(500)
+    expertise            String?         @db.LongText
+    about                String?         @db.LongText
+    location             String?         @db.VarChar(500)
+    service              String?         @db.LongText
+    website              String?         @db.VarChar(500)
+    gallery_image_url    String?         @db.VarChar(500)
 }
 
 model administrator {

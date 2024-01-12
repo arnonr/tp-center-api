@@ -52,6 +52,36 @@ const filterData = (req) => {
     };
   }
 
+  if (req.query.expertise) {
+    $where["expertise"] = {
+      contains: req.query.expertise,
+    };
+  }
+
+  if (req.query.about) {
+    $where["about"] = {
+      contains: req.query.about,
+    };
+  }
+
+  if (req.query.location) {
+    $where["location"] = {
+      contains: req.query.location,
+    };
+  }
+
+  if (req.query.service) {
+    $where["service"] = {
+      contains: req.query.service,
+    };
+  }
+
+  if (req.query.website) {
+    $where["website"] = {
+      contains: req.query.website,
+    };
+  }
+
   if (req.query.is_publish) {
     $where["is_publish"] = parseInt(req.query.is_publish);
   }
@@ -132,6 +162,12 @@ const selectField = {
   responsible_staff: true,
   responsible_phone: true,
   responsible_email: true,
+  expertise: true,
+  about: true,
+  location: true,
+  service: true,
+  website: true,
+  gallery_image_url: true,
   campus: {
     select: {
       code: true,
@@ -217,6 +253,12 @@ const methods = {
           responsible_staff: req.body.responsible_staff,
           responsible_phone: req.body.responsible_phone,
           responsible_email: req.body.responsible_email,
+          expertise: req.body.expertise,
+          about: req.body.about,
+          location: req.body.location,
+          service: req.body.service,
+          website: req.body.website,
+          gallery_image_url: req.body.gallery_image_url,
           is_publish: Number(req.body.is_publish),
           created_by: "arnonr",
           updated_by: "arnonr",
@@ -272,6 +314,18 @@ const methods = {
             req.body.is_publish != null
               ? Number(req.body.is_publish)
               : undefined,
+
+          expertise:
+            req.body.expertise != null ? req.body.expertise : undefined,
+          about: req.body.about != null ? req.body.about : undefined,
+          location: req.body.location != null ? req.body.location : undefined,
+          service: req.body.service != null ? req.body.service : undefined,
+          website: req.body.website != null ? req.body.website : undefined,
+          gallery_image_url:
+            req.body.gallery_image_url != null
+              ? req.body.gallery_image_url
+              : undefined,
+
           updated_by: "arnonr",
         },
       });
